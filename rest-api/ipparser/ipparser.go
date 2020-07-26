@@ -10,7 +10,7 @@ func ValidIP4(ipAddress string) bool {
 		return false
 	}
 
-	return (testInput.To4() != nil)
+	return testInput.To4() != nil
 }
 
 func ValidIP6(ip6Address string) bool {
@@ -19,5 +19,5 @@ func ValidIP6(ip6Address string) bool {
 		return false
 	}
 
-	return (testInputIP6.To16() != nil)
+	return testInputIP6.To16() != nil
 }

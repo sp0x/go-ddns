@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"dyndns/ipparser"
+	"github.com/sp0x/docker-ddns/rest-api/ipparser"
 )
 
 type RequestDataExtractor struct {
@@ -19,12 +19,12 @@ type RequestDataExtractor struct {
 }
 
 type WebserviceResponse struct {
-	Success  bool
-	Message  string
-	Domain   string
-	Domains  []string
-	Address  string
-	AddrType string
+	Success  bool     `json:"success"`
+	Message  string   `json:"message"`
+	Domain   string   `json:"domain"`
+	Domains  []string `json:"domains"`
+	Address  string   `json:"address"`
+	AddrType string   `json:"addr_type"`
 }
 
 func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config, extractors RequestDataExtractor) WebserviceResponse {
@@ -61,7 +61,7 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config, extr
 		var ip string
 		var err error
 
-		ip, err = getUserIP(r)
+		ip, err = getRequestRemoteAddress(r)
 		if ip == "" {
 			ip, _, err = net.SplitHostPort(r.RemoteAddr)
 		}
@@ -87,13 +87,11 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config, extr
 
 		response.Address = ip
 	}
-
 	response.Success = true
-
 	return response
 }
 
-func getUserIP(r *http.Request) (string, error) {
+func getRequestRemoteAddress(r *http.Request) (string, error) {
 	for _, h := range []string{"X-Real-Ip", "X-Forwarded-For"} {
 		addresses := strings.Split(r.Header.Get(h), ",")
 		// march from right to left until we get a public address
@@ -102,7 +100,7 @@ func getUserIP(r *http.Request) (string, error) {
 			ip := strings.TrimSpace(addresses[i])
 			// header can contain spaces too, strip those out.
 			realIP := net.ParseIP(ip)
-			if !realIP.IsGlobalUnicast() || isPrivateSubnet(realIP) {
+			if !realIP.IsGlobalUnicast() || addressIsPrivate(realIP) {
 				// bad address, go to next
 				continue
 			}
@@ -127,39 +125,39 @@ func inRange(r ipRange, ipAddress net.IP) bool {
 	return false
 }
 
-var privateRanges = []ipRange{
-	ipRange{
+var privateAddressRanges = []ipRange{
+	{
 		start: net.ParseIP("10.0.0.0"),
 		end:   net.ParseIP("10.255.255.255"),
 	},
-	ipRange{
+	{
 		start: net.ParseIP("100.64.0.0"),
 		end:   net.ParseIP("100.127.255.255"),
 	},
-	ipRange{
+	{
 		start: net.ParseIP("172.16.0.0"),
 		end:   net.ParseIP("172.31.255.255"),
 	},
-	ipRange{
+	{
 		start: net.ParseIP("192.0.0.0"),
 		end:   net.ParseIP("192.0.0.255"),
 	},
-	ipRange{
+	{
 		start: net.ParseIP("192.168.0.0"),
 		end:   net.ParseIP("192.168.255.255"),
 	},
-	ipRange{
+	{
 		start: net.ParseIP("198.18.0.0"),
 		end:   net.ParseIP("198.19.255.255"),
 	},
 }
 
-// isPrivateSubnet - check to see if this ip is in a private subnet
-func isPrivateSubnet(ipAddress net.IP) bool {
+// addressIsPrivate - check to see if this ip is in a private subnet
+func addressIsPrivate(ipAddress net.IP) bool {
 	// my use case is only concerned with ipv4 atm
 	if ipCheck := ipAddress.To4(); ipCheck != nil {
 		// iterate over all our ranges
-		for _, r := range privateRanges {
+		for _, r := range privateAddressRanges {
 			// check if this ip is in a private range
 			if inRange(r, ipAddress) {
 				return true
@@ -168,4 +166,3 @@ func isPrivateSubnet(ipAddress net.IP) bool {
 	}
 	return false
 }
-

@@ -20,12 +20,7 @@ func main() {
 	appConfig.LoadConfig("/etc/dyndns.json")
 
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/update", Update).Methods("GET")
-
-	/* DynDNS compatible handlers. Most routers will invoke /nic/update */
-	router.HandleFunc("/nic/update", DynUpdate).Methods("GET")
-	router.HandleFunc("/v2/update", DynUpdate).Methods("GET")
-	router.HandleFunc("/v3/update", DynUpdate).Methods("GET")
+	setupRoutes(router)
 
 	log.Println(fmt.Sprintf("Serving dyndns REST services on 0.0.0.0:8080..."))
 	log.Fatal(http.ListenAndServe(":8080", router))
@@ -48,9 +43,9 @@ func DynUpdate(w http.ResponseWriter, r *http.Request) {
 
 	if response.Success == false {
 		if response.Message == "Domain not set" {
-			w.Write([]byte("notfqdn\n"))
+			_, _ = w.Write([]byte("notfqdn\n"))
 		} else {
-			w.Write([]byte("badauth\n"))
+			_, _ = w.Write([]byte("badauth\n"))
 		}
 		return
 	}
@@ -62,7 +57,7 @@ func DynUpdate(w http.ResponseWriter, r *http.Request) {
 			response.Success = false
 			response.Message = result
 
-			w.Write([]byte("dnserr\n"))
+			_, _ = w.Write([]byte("dnserr\n"))
 			return
 		}
 	}
@@ -70,7 +65,7 @@ func DynUpdate(w http.ResponseWriter, r *http.Request) {
 	response.Success = true
 	response.Message = fmt.Sprintf("Updated %s record for %s to IP address %s", response.AddrType, response.Domain, response.Address)
 
-	w.Write([]byte(fmt.Sprintf("good %s\n", response.Address)))
+	_, _ = w.Write([]byte(fmt.Sprintf("good %s\n", response.Address)))
 }
 
 func Update(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +77,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	response := BuildWebserviceResponseFromRequest(r, appConfig, extractor)
 
 	if response.Success == false {
-		json.NewEncoder(w).Encode(response)
+		_ = json.NewEncoder(w).Encode(response)
 		return
 	}
 
@@ -93,7 +88,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 			response.Success = false
 			response.Message = result
 
-			json.NewEncoder(w).Encode(response)
+			_ = json.NewEncoder(w).Encode(response)
 			return
 		}
 	}
@@ -101,7 +96,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	response.Success = true
 	response.Message = fmt.Sprintf("Updated %s record for %s to IP address %s", response.AddrType, response.Domain, response.Address)
 
-	json.NewEncoder(w).Encode(response)
+	_ = json.NewEncoder(w).Encode(response)
 }
 
 func UpdateRecord(domain string, ipaddr string, addrType string) string {
@@ -112,17 +107,19 @@ func UpdateRecord(domain string, ipaddr string, addrType string) string {
 		return err.Error()
 	}
 
-	defer os.Remove(f.Name())
+	defer func() {
+		_ = os.Remove(f.Name())
+	}()
 	w := bufio.NewWriter(f)
 
-	w.WriteString(fmt.Sprintf("server %s\n", appConfig.Server))
-	w.WriteString(fmt.Sprintf("zone %s\n", appConfig.Zone))
-	w.WriteString(fmt.Sprintf("update delete %s.%s %s\n", domain, appConfig.Domain, addrType))
-	w.WriteString(fmt.Sprintf("update add %s.%s %v %s %s\n", domain, appConfig.Domain, appConfig.RecordTTL, addrType, ipaddr))
-	w.WriteString("send\n")
+	_, _ = w.WriteString(fmt.Sprintf("server %s\n", appConfig.Server))
+	_, _ = w.WriteString(fmt.Sprintf("zone %s\n", appConfig.Zone))
+	_, _ = w.WriteString(fmt.Sprintf("update delete %s.%s %s\n", domain, appConfig.Domain, addrType))
+	_, _ = w.WriteString(fmt.Sprintf("update add %s.%s %v %s %s\n", domain, appConfig.Domain, appConfig.RecordTTL, addrType, ipaddr))
+	_, _ = w.WriteString("send\n")
 
-	w.Flush()
-	f.Close()
+	_ = w.Flush()
+	_ = f.Close()
 
 	cmd := exec.Command(appConfig.NsupdateBinary, f.Name())
 	var out bytes.Buffer
