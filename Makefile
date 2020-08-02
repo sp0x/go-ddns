@@ -1,3 +1,6 @@
+NAME=ddns
+
+
 image:
 	docker build -t davd/docker-ddns:latest .
 
