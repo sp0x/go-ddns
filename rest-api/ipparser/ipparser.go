@@ -4,7 +4,7 @@ import (
 	"net"
 )
 
-func ValidIP4(ipAddress string) bool {
+func IsIPv4(ipAddress string) bool {
 	testInput := net.ParseIP(ipAddress)
 	if testInput == nil {
 		return false
@@ -13,7 +13,7 @@ func ValidIP4(ipAddress string) bool {
 	return testInput.To4() != nil
 }
 
-func ValidIP6(ip6Address string) bool {
+func IsIPv6(ip6Address string) bool {
 	testInputIP6 := net.ParseIP(ip6Address)
 	if testInputIP6 == nil {
 		return false

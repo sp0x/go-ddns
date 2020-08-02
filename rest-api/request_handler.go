@@ -58,9 +58,9 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config) Webs
 	// kept in the response for compatibility reasons
 	response.Domain = strings.Join(response.Domains, ",")
 
-	if ipparser.ValidIP4(response.Address) {
+	if ipparser.IsIPv4(response.Address) {
 		response.AddrType = "A"
-	} else if ipparser.ValidIP6(response.Address) {
+	} else if ipparser.IsIPv6(response.Address) {
 		response.AddrType = "AAAA"
 	} else {
 		var ip string
@@ -77,9 +77,9 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config) Webs
 			log.Println(fmt.Sprintf("Invalid address: %q", r.RemoteAddr))
 			return response
 		}
-		if ipparser.ValidIP4(ip) {
+		if ipparser.IsIPv4(ip) {
 			response.AddrType = "A"
-		} else if ipparser.ValidIP6(ip) {
+		} else if ipparser.IsIPv6(ip) {
 			response.AddrType = "AAAA"
 		} else {
 			response.Success = false

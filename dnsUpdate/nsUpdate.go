@@ -53,7 +53,6 @@ func (ns *NSUpdate) UpdateRecord(domain string, ipaddr string, recordType string
 	_ = f.Close()
 
 	cmd := exec.Command(ns.binary, f.Name())
-	//cmd := exec.Command(appConfig.NsupdateBinary, f.Name())
 	var out bytes.Buffer
 	var stderr bytes.Buffer
 	cmd.Stdout = &out
