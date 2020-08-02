@@ -12,7 +12,7 @@ import (
 	"github.com/sp0x/docker-ddns/rest-api/ipparser"
 )
 
-type RequestDataExtractor struct {
+type dnsRequestExtractor struct {
 	Address func(request *http.Request) string
 	Secret  func(request *http.Request) string
 	Domain  func(request *http.Request) string
@@ -27,14 +27,14 @@ type WebserviceResponse struct {
 	AddrType string   `json:"addr_type"`
 }
 
-func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config, extractors RequestDataExtractor) WebserviceResponse {
+func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config) WebserviceResponse {
 	response := WebserviceResponse{}
-	sharedSecret := extractors.Secret(r)
-	response.Domains = strings.Split(extractors.Domain(r), ",")
-	response.Address = extractors.Address(r)
+	dnsRequest := dnsRequestExtractors.Extract(r)
+	response.Domains = strings.Split(dnsRequest.Domain, ",")
+	response.Address = dnsRequest.Address
 
-	if sharedSecret != appConfig.SharedSecret {
-		log.Println(fmt.Sprintf("Invalid shared secret: %s", sharedSecret))
+	if dnsRequest.Secret != appConfig.SharedSecret {
+		log.Println(fmt.Sprintf("Invalid shared secret: %s", dnsRequest.Secret))
 		response.Success = false
 		response.Message = "Invalid Credentials"
 		return response

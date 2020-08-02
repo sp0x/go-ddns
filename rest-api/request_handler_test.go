@@ -5,13 +5,13 @@ import (
 	"testing"
 )
 
-var defaultExtractor = RequestDataExtractor{
+var defaultExtractor = dnsRequestExtractor{
 	Address: func(r *http.Request) string { return r.URL.Query().Get("addr") },
 	Secret:  func(r *http.Request) string { return r.URL.Query().Get("secret") },
 	Domain:  func(r *http.Request) string { return r.URL.Query().Get("domain") },
 }
 
-var dynExtractor = RequestDataExtractor{
+var dynExtractor = dnsRequestExtractor{
 	Address: func(r *http.Request) string { return r.URL.Query().Get("myip") },
 	Secret: func(r *http.Request) string {
 		_, sharedSecret, ok := r.BasicAuth()
