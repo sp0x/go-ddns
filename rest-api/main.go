@@ -1,27 +1,28 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"github.com/gorilla/mux"
+	"github.com/sp0x/docker-ddns/dnsUpdate"
 	"log"
 	"net/http"
-	"os"
-	"os/exec"
-
-	"github.com/gorilla/mux"
 )
 
 var appConfig = &Config{}
+var updater dnsUpdate.Updater
 
 func main() {
 	appConfig.LoadConfig("/etc/dyndns.json")
 
 	router := mux.NewRouter().StrictSlash(true)
 	setupRoutes(router)
-
+	nsupdater := dnsUpdate.NewNsUpdater(appConfig.NsupdateBinary)
+	nsupdater.DefaultTTL = appConfig.RecordTTL
+	nsupdater.Server = appConfig.Server
+	nsupdater.Domain = appConfig.Domain
+	nsupdater.Zone = appConfig.Zone
+	updater = nsupdater
 	log.Println(fmt.Sprintf("Serving dyndns REST services on 0.0.0.0:8080..."))
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
@@ -51,8 +52,7 @@ func DynUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, domain := range response.Domains {
-		result := UpdateRecord(domain, response.Address, response.AddrType)
-
+		result := updater.UpdateRecord(domain, response.Address, response.AddrType)
 		if result != "" {
 			response.Success = false
 			response.Message = result
@@ -82,7 +82,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, domain := range response.Domains {
-		result := UpdateRecord(domain, response.Address, response.AddrType)
+		result := updater.UpdateRecord(domain, response.Address, response.AddrType)
 
 		if result != "" {
 			response.Success = false
@@ -97,39 +97,4 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	response.Message = fmt.Sprintf("Updated %s record for %s to IP address %s", response.AddrType, response.Domain, response.Address)
 
 	_ = json.NewEncoder(w).Encode(response)
-}
-
-func UpdateRecord(domain string, ipaddr string, addrType string) string {
-	log.Println(fmt.Sprintf("%s record update request: %s -> %s", addrType, domain, ipaddr))
-
-	f, err := ioutil.TempFile(os.TempDir(), "dyndns")
-	if err != nil {
-		return err.Error()
-	}
-
-	defer func() {
-		_ = os.Remove(f.Name())
-	}()
-	w := bufio.NewWriter(f)
-
-	_, _ = w.WriteString(fmt.Sprintf("server %s\n", appConfig.Server))
-	_, _ = w.WriteString(fmt.Sprintf("zone %s\n", appConfig.Zone))
-	_, _ = w.WriteString(fmt.Sprintf("update delete %s.%s %s\n", domain, appConfig.Domain, addrType))
-	_, _ = w.WriteString(fmt.Sprintf("update add %s.%s %v %s %s\n", domain, appConfig.Domain, appConfig.RecordTTL, addrType, ipaddr))
-	_, _ = w.WriteString("send\n")
-
-	_ = w.Flush()
-	_ = f.Close()
-
-	cmd := exec.Command(appConfig.NsupdateBinary, f.Name())
-	var out bytes.Buffer
-	var stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	err = cmd.Run()
-	if err != nil {
-		return err.Error() + ": " + stderr.String()
-	}
-
-	return out.String()
 }
