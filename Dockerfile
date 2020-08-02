@@ -1,15 +1,13 @@
-FROM debian:buster as builder
-RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
-	apt-get install -q -y golang git-core && \
-	apt-get clean
+FROM golang:1.14-buster as builder
 
 ENV GOPATH=/root/go
-RUN mkdir -p /root/go/src
-COPY rest-api /root/go/src/dyndns
-RUN cd /root/go/src/dyndns && go get
+RUN mkdir -p /app
+COPY ./ /app
+RUN cd /app \
+    && make build
 
 FROM debian:buster-slim
-MAINTAINER David Prandzioch <hello+ddns@davd.eu>
+MAINTAINER David Prandzioch <vaskovasilev94@yahoo.com>
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
 	apt-get install -q -y bind9 dnsutils && \
@@ -19,7 +17,7 @@ RUN chmod 770 /var/cache/bind
 COPY setup.sh /root/setup.sh
 RUN chmod +x /root/setup.sh
 COPY named.conf.options /etc/bind/named.conf.options
-COPY --from=builder /root/go/bin/dyndns /root/dyndns
+COPY --from=builder /app/ddns /root/ddns
 
 EXPOSE 53 8080
-CMD ["sh", "-c", "/root/setup.sh ; service bind9 start ; /root/dyndns"]
+CMD ["sh", "-c", "/root/setup.sh ; service bind9 start ; /root/ddns"]

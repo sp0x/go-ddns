@@ -2,16 +2,15 @@ version: '3'
 services:
   ddns:
     image: sp0x/go-ddns:latest
-    #image: davd/docker-ddns:develop
-    #build: .
+    build: .
     restart: always
     environment:
       RECORD_TTL: 60
       ZONE: example.org
       SHARED_SECRET: changeme
-    ports:
-      - "53:53"
-      - "53:53/udp"
-      - "8080:8080"
+#    ports:
+#      - "53:53"
+#      - "53:53/udp"
+#      - "8081:8080"
 #    volumes:
 #       - ./bind-data:/var/cache/bind
