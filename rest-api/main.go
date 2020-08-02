@@ -20,7 +20,6 @@ func main() {
 	nsupdater.Domain = appConfig.Domain
 	nsupdater.Zone = appConfig.Zone
 	updater = nsupdater
-	registerRequestParsers()
 	router := mux.NewRouter().StrictSlash(true)
 	setupRoutes(router)
 	log.Println(fmt.Sprintf("Serving dyndns REST services on 0.0.0.0:8080..."))

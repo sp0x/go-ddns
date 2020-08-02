@@ -30,6 +30,12 @@ type WebserviceResponse struct {
 func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config) WebserviceResponse {
 	response := WebserviceResponse{}
 	dnsRequest := dnsRequestExtractors.Extract(r)
+	if dnsRequest == nil {
+		return WebserviceResponse{
+			Success: false,
+			Message: "Invalid request",
+		}
+	}
 	response.Domains = strings.Split(dnsRequest.Domain, ",")
 	response.Address = dnsRequest.Address
 
