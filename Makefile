@@ -1,6 +1,9 @@
 image:
 	docker build -t davd/docker-ddns:latest .
 
+build:
+	go build -o $(NAME) -ldflags "-s -w" ./rest-api
+
 console:
 	docker run -it -p 8080:8080 -p 53:53 -p 53:53/udp --rm davd/docker-ddns:latest bash
 
