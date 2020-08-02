@@ -1,5 +1,9 @@
 NAME=ddns
+GOCMD = go
+GOTEST = $(GOCMD) test -v
 
+test:
+	$(GOTEST) ./...
 
 image:
 	docker build -t davd/docker-ddns:latest .

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sp0x/docker-ddns/rest-api/ipparser"
+	"github.com/sp0x/go-ddns/rest-api/ipparser"
 )
 
 type dnsRequestExtractor struct {

@@ -1,4 +1,4 @@
-module github.com/sp0x/docker-ddns
+module github.com/sp0x/go-ddns
 
 go 1.14
 
