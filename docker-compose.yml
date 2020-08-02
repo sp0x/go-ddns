@@ -1,7 +1,7 @@
 version: '3'
 services:
   ddns:
-    image: davd/docker-ddns:latest
+    image: sp0x/go-ddns:latest
     #image: davd/docker-ddns:develop
     #build: .
     restart: always

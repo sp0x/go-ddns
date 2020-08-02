@@ -6,22 +6,19 @@ test:
 	$(GOTEST) ./...
 
 image:
-	docker build -t davd/docker-ddns:latest .
+	docker build -t sp0x/go-ddns:latest .
 
 build:
 	go build -o $(NAME) -ldflags "-s -w" ./rest-api
 
 console:
-	docker run -it -p 8080:8080 -p 53:53 -p 53:53/udp --rm davd/docker-ddns:latest bash
+	docker run -it -p 8080:8080 -p 53:53 -p 53:53/udp --rm sp0x/go-ddns:latest bash
 
 devconsole:
 	docker run -it --rm -v ${PWD}/rest-api:/usr/src/app -w /usr/src/app golang:1.8.5 bash
 
 server_test:
-	docker run -it -p 8080:8080 -p 53:53 -p 53:53/udp --env-file envfile --rm davd/docker-ddns:latest
-
-unit_tests:
-	docker run -it --rm -v ${PWD}/rest-api:/go/src/dyndns -w /go/src/dyndns golang:1.8.5 /bin/bash -c "go get && go test -v"
+	docker run -it -p 8080:8080 -p 53:53 -p 53:53/udp --env-file envfile --rm sp0x/go-ddns:latest
 
 api_test:
 	curl "http://localhost:8080/update?secret=changeme&domain=foo&addr=1.2.3.4"
@@ -47,4 +44,4 @@ api_test_recursion:
 	dig @localhost google.com
 
 deploy: image
-	docker run -it -d -p 8080:8080 -p 53:53 -p 53:53/udp --env-file envfile --name=dyndns davd/docker-ddns:latest
+	docker run -it -d -p 8080:8080 -p 53:53 -p 53:53/udp --env-file envfile --name=dyndns sp0x/go-ddns:latest
