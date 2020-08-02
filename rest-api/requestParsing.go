@@ -6,6 +6,10 @@ type RequestExtractionSet []dnsRequestExtractor
 
 var dnsRequestExtractors RequestExtractionSet
 
+func init() {
+	registerRequestParsers()
+}
+
 type DnsRequest struct {
 	Address string
 	Secret  string
@@ -30,6 +34,7 @@ func registerRequestParsers() {
 		},
 		Domain: func(r *http.Request) string { return r.URL.Query().Get("hostname") },
 	})
+	dnsRequestExtractors = e
 }
 
 func (e RequestExtractionSet) Extract(r *http.Request) *DnsRequest {
@@ -37,7 +42,7 @@ func (e RequestExtractionSet) Extract(r *http.Request) *DnsRequest {
 		addr := extractor.Address(r)
 		secret := extractor.Secret(r)
 		domain := extractor.Domain(r)
-		if !(addr == "" || secret == "" || domain == "") {
+		if !(secret == "" || domain == "") {
 			return &DnsRequest{
 				Address: addr,
 				Secret:  secret,

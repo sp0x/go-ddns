@@ -1,7 +1,7 @@
 package main
 
 import (
-	"dyndns/ipparser"
+	"github.com/sp0x/go-ddns/rest-api/ipparser"
 	"testing"
 )
 

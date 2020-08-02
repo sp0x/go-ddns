@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/sp0x/docker-ddns/dnsUpdate"
+	"github.com/sp0x/go-ddns/dnsUpdate"
 	"log"
 	"net/http"
 )
@@ -20,7 +20,6 @@ func main() {
 	nsupdater.Domain = appConfig.Domain
 	nsupdater.Zone = appConfig.Zone
 	updater = nsupdater
-	registerRequestParsers()
 	router := mux.NewRouter().StrictSlash(true)
 	setupRoutes(router)
 	log.Println(fmt.Sprintf("Serving dyndns REST services on 0.0.0.0:8080..."))

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sp0x/docker-ddns/rest-api/ipparser"
+	"github.com/sp0x/go-ddns/rest-api/ipparser"
 )
 
 type dnsRequestExtractor struct {
@@ -30,6 +30,12 @@ type WebserviceResponse struct {
 func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config) WebserviceResponse {
 	response := WebserviceResponse{}
 	dnsRequest := dnsRequestExtractors.Extract(r)
+	if dnsRequest == nil {
+		return WebserviceResponse{
+			Success: false,
+			Message: "Invalid request",
+		}
+	}
 	response.Domains = strings.Split(dnsRequest.Domain, ",")
 	response.Address = dnsRequest.Address
 
