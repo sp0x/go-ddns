@@ -15,6 +15,7 @@ type Config struct {
 	Domain         string
 	NsupdateBinary string
 	RecordTTL      int
+	DnsProvider    string
 }
 
 func (conf *Config) loadConfig(configFile string) {
@@ -50,8 +51,10 @@ func (conf *Config) loadConfig(configFile string) {
 	conf.Domain = viper.GetString("domain")
 	conf.NsupdateBinary = viper.GetString("nsupdate.path")
 	conf.RecordTTL = viper.GetInt("ttl")
+	conf.DnsProvider = viper.GetString("provider")
 }
 
 func (conf *Config) setDefaults() {
 	viper.SetDefault("ttl", 300)
+	viper.SetDefault("provider", "nsupdate")
 }
