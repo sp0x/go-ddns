@@ -9,7 +9,7 @@ import (
 )
 
 type Config struct {
-	SharedSecret   string
+	Secret         string
 	Server         string
 	Zone           string
 	Domain         string
@@ -17,7 +17,7 @@ type Config struct {
 	RecordTTL      int
 }
 
-func (conf *Config) LoadConfig(configFile string) {
+func (conf *Config) loadConfig(configFile string) {
 	if configFile != "" {
 		viper.SetConfigFile(configFile)
 	} else {
@@ -32,6 +32,7 @@ func (conf *Config) LoadConfig(configFile string) {
 	if viper.GetBool("verbose") {
 		log.SetLevel(log.DebugLevel)
 	}
+	conf.setDefaults()
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			err = viper.SafeWriteConfig()
@@ -42,4 +43,15 @@ func (conf *Config) LoadConfig(configFile string) {
 			log.Warningf("error while reading config file: %v\n", err)
 		}
 	}
+
+	conf.Secret = viper.GetString("secret")
+	conf.Server = viper.GetString("nsupdate.server")
+	conf.Zone = viper.GetString("zone")
+	conf.Domain = viper.GetString("domain")
+	conf.NsupdateBinary = viper.GetString("nsupdate.path")
+	conf.RecordTTL = viper.GetInt("ttl")
+}
+
+func (conf *Config) setDefaults() {
+	viper.SetDefault("ttl", 300)
 }

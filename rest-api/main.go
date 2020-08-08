@@ -13,7 +13,7 @@ var appConfig = &Config{}
 var updater dnsUpdate.Updater
 
 func main() {
-	appConfig.LoadConfig("/etc/dyndns.json")
+	appConfig.loadConfig("/etc/goddns.yml")
 	nsupdater := dnsUpdate.NewNsUpdater(appConfig.NsupdateBinary)
 	nsupdater.DefaultTTL = appConfig.RecordTTL
 	nsupdater.Server = appConfig.Server
