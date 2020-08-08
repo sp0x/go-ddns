@@ -13,7 +13,7 @@ var appConfig = &Config{}
 var updater dnsUpdate.Updater
 
 func main() {
-	appConfig.LoadConfig("/etc/dyndns.json")
+	appConfig.loadConfig("/etc/goddns.yml")
 	nsupdater := dnsUpdate.NewNsUpdater(appConfig.NsupdateBinary)
 	nsupdater.DefaultTTL = appConfig.RecordTTL
 	nsupdater.Server = appConfig.Server
@@ -22,7 +22,7 @@ func main() {
 	updater = nsupdater
 	router := mux.NewRouter().StrictSlash(true)
 	setupRoutes(router)
-	log.Println(fmt.Sprintf("Serving dyndns REST services on 0.0.0.0:8080..."))
+	log.Println("Dyndns REST services listening on 0.0.0.0:8080...")
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 

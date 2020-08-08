@@ -39,7 +39,7 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config) Webs
 	response.Domains = strings.Split(dnsRequest.Domain, ",")
 	response.Address = dnsRequest.Address
 
-	if dnsRequest.Secret != appConfig.SharedSecret {
+	if dnsRequest.Secret != appConfig.Secret {
 		log.Println(fmt.Sprintf("Invalid shared secret: %s", dnsRequest.Secret))
 		response.Success = false
 		response.Message = "Invalid Credentials"
@@ -49,7 +49,7 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config) Webs
 	for _, domain := range response.Domains {
 		if domain == "" {
 			response.Success = false
-			response.Message = fmt.Sprintf("Domain not set")
+			response.Message = "Domain not set"
 			log.Println("Domain not set")
 			return response
 		}
