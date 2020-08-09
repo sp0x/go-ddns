@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"google.golang.org/api/dns/v1"
 	"google.golang.org/api/option"
 	"log"
@@ -43,8 +42,6 @@ func (ns *GoogleCloudDns) ListZone() ([]*dns.ResourceRecordSet, error) {
 	req := ns.service.Changes.List(ns.project, ns.zone)
 	if err := req.Pages(ns.ctx, func(page *dns.ChangesListResponse) error {
 		for _, change := range page.Changes {
-			// TODO: Change code below to process each `change` resource:
-			fmt.Printf("%s\n", spew.Sdump(change))
 			output = append(output, change.Additions...)
 		}
 		return nil
