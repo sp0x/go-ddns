@@ -11,11 +11,44 @@ import (
 )
 
 type GoogleCloudDns struct {
-	ctx     context.Context
+	ctx            context.Context
+	service        *dns.Service
+	serviceAdapter DnsServiceAdapter
+	zone           string
+	project        string
+	ttl            int64
+}
+
+//go:generate mockgen -destination=mocks/mock_dnsServiceAdapter.go -package=mocks . DnsServiceAdapter
+type DnsServiceAdapter interface {
+	List(zone string, domain string, recType string) ([]*dns.ResourceRecordSet, error)
+	Change(zone string, change *dns.Change) (string, error)
+}
+
+type GoogleServiceAdapter struct {
 	service *dns.Service
-	zone    string
 	project string
-	ttl     int64
+	ctx     context.Context
+}
+
+func (gs *GoogleServiceAdapter) List(zone string, domain string, recType string) ([]*dns.ResourceRecordSet, error) {
+	records, err := gs.service.ResourceRecordSets.List(gs.project, zone).
+		Name(domain).
+		Type(recType).
+		Do()
+	if err != nil {
+		return nil, err
+	}
+	return records.Rrsets, nil
+}
+
+func (gs *GoogleServiceAdapter) Change(zone string, change *dns.Change) (string, error) {
+	changeCall := gs.service.Changes.Create(gs.project, zone, change)
+	resp, err := changeCall.Context(gs.ctx).Do()
+	if err != nil {
+		return "", err
+	}
+	return resp.Status, nil
 }
 
 func NewGoogleDns(projectName string) *GoogleCloudDns {
@@ -27,6 +60,7 @@ func NewGoogleDns(projectName string) *GoogleCloudDns {
 		os.Exit(1)
 	}
 	output.service = dnsService
+	output.serviceAdapter = &GoogleServiceAdapter{dnsService, projectName, output.ctx}
 	return output
 }
 
@@ -53,14 +87,11 @@ func (ns *GoogleCloudDns) ListZone() ([]*dns.ResourceRecordSet, error) {
 }
 
 func (ns *GoogleCloudDns) ListRecordsWithName(name string, recordType string) ([]*dns.ResourceRecordSet, error) {
-	records, err := ns.service.ResourceRecordSets.List(ns.project, ns.zone).
-		Name(name).
-		Type(recordType).
-		Do()
+	records, err := ns.serviceAdapter.List(ns.zone, name, recordType)
 	if err != nil {
 		return nil, err
 	}
-	return records.Rrsets, nil
+	return records, nil
 }
 
 func (ns *GoogleCloudDns) HasAFor(name string) (bool, error) {
@@ -89,10 +120,12 @@ func (ns *GoogleCloudDns) UpdateRecord(domain string, value string, recordType s
 	}
 	change.Deletions = existingRecords
 
-	changeCall := ns.service.Changes.Create(ns.project, ns.zone, change)
-	resp, err := changeCall.Context(ns.ctx).Do()
+	//changeCall := ns.service.Changes.Create(ns.project, ns.zone, change)
+	//resp, err := changeCall.Context(ns.ctx).Do()
+	resp, err := ns.serviceAdapter.Change(ns.zone, change)
 	if err != nil {
 		return "", err
 	}
-	return resp.Status, nil
+	//return resp.Status, nil
+	return resp, nil
 }
