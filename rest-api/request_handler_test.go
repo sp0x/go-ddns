@@ -1,12 +1,13 @@
 package main
 
 import (
+	"github.com/sp0x/go-ddns/config"
 	"net/http"
 	"testing"
 )
 
 func TestBuildWebserviceResponseFromRequestToReturnValidObject(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("GET", "/update?secret=changeme&domain=foo&addr=1.2.3.4", nil)
@@ -30,7 +31,7 @@ func TestBuildWebserviceResponseFromRequestToReturnValidObject(t *testing.T) {
 }
 
 func TestBuildWebserviceResponseFromRequestWithXRealIPHeaderToReturnValidObject(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("GET", "/update?secret=changeme&domain=foo", nil)
@@ -55,7 +56,7 @@ func TestBuildWebserviceResponseFromRequestWithXRealIPHeaderToReturnValidObject(
 }
 
 func TestBuildWebserviceResponseFromRequestWithXForwardedForHeaderToReturnValidObject(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("GET", "/update?secret=changeme&domain=foo", nil)
@@ -80,7 +81,7 @@ func TestBuildWebserviceResponseFromRequestWithXForwardedForHeaderToReturnValidO
 }
 
 func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenNoSecretIsGiven(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("GET", "/update", nil)
@@ -92,7 +93,7 @@ func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenNoSecretIsGi
 }
 
 func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenInvalidSecretIsGiven(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("GET", "/update?secret=foo", nil)
@@ -104,7 +105,7 @@ func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenInvalidSecre
 }
 
 func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenNoDomainIsGiven(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("GET", "/update?secret=changeme", nil)
@@ -116,7 +117,7 @@ func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenNoDomainIsGi
 }
 
 func TestBuildWebserviceResponseFromRequestWithMultipleDomains(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("GET", "/update?secret=changeme&domain=foo,bar&addr=1.2.3.4", nil)
@@ -140,7 +141,7 @@ func TestBuildWebserviceResponseFromRequestWithMultipleDomains(t *testing.T) {
 }
 
 func TestBuildWebserviceResponseFromRequestWithMalformedMultipleDomains(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("GET", "/update?secret=changeme&domain=foo,&addr=1.2.3.4", nil)
@@ -152,7 +153,7 @@ func TestBuildWebserviceResponseFromRequestWithMalformedMultipleDomains(t *testi
 }
 
 func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenNoAddressIsGiven(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("POST", "/update?secret=changeme&domain=foo", nil)
@@ -164,7 +165,7 @@ func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenNoAddressIsG
 }
 
 func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenInvalidAddressIsGiven(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("GET", "/update?secret=changeme&domain=foo&addr=1.41:2", nil)
@@ -176,7 +177,7 @@ func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenInvalidAddre
 }
 
 func TestBuildWebserviceResponseFromRequestToReturnValidObjectWithDynExtractor(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("GET", "/nic/update?hostname=foo&myip=1.2.3.4", nil)
@@ -202,7 +203,7 @@ func TestBuildWebserviceResponseFromRequestToReturnValidObjectWithDynExtractor(t
 }
 
 func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenNoSecretIsGivenWithDynExtractor(t *testing.T) {
-	var appConfig = &Config{}
+	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
 
 	req, _ := http.NewRequest("GET", "/nic/update", nil)

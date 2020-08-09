@@ -12,6 +12,15 @@ devices at home from anywhere in the world. All you need is a cheap VPS, a domai
 
 You can either take the image from DockerHub or build it on your own.
 
+## Dns updater support
+**nsupdate** - No configuration is needed here  
+**Google's Cloud DNS** - you need to configure the project name and the path to your service credentials file.  
+This could be done through the environment variables:
+```yaml
+PROJECT_NAME=.... # Your project name
+GOOGLE_APPLICATION_CREDENTIALS=./keys.json # The path to your service credentials.
+```
+
 ### Using DockerHub
 
 Just customize this to your needs and run:

@@ -4,22 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
+	"github.com/sp0x/go-ddns/config"
 	"github.com/sp0x/go-ddns/dnsUpdate"
-	"log"
 	"net/http"
 )
 
-var appConfig = &Config{}
+var appConfig = &config.Config{}
 var updater dnsUpdate.Updater
 
 func main() {
-	appConfig.loadConfig("/etc/goddns.yml")
-	nsupdater := dnsUpdate.NewNsUpdater(appConfig.NsupdateBinary)
-	nsupdater.DefaultTTL = appConfig.RecordTTL
-	nsupdater.Server = appConfig.Server
-	nsupdater.Domain = appConfig.Domain
-	nsupdater.Zone = appConfig.Zone
-	updater = nsupdater
+	appConfig.Load("/etc/goddns.yml")
+	updater = dnsUpdate.NewUpdater(appConfig)
+	//_, _ = updater.UpdateRecord("vaskovasilev.eu","192.38.140.182","A")
+	//updater.DefaultTTL = appConfig.RecordTTL
+	//updater.Server = appConfig.Server
+	//updater.Domain = appConfig.Domain
+	//updater.Zone = appConfig.Zone
 	router := mux.NewRouter().StrictSlash(true)
 	setupRoutes(router)
 	log.Println("Dyndns REST services listening on 0.0.0.0:8080...")
@@ -35,20 +36,24 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		} else {
 			_, _ = w.Write([]byte("badauth\n"))
 		}
-		return
 		//_ = json.NewEncoder(w).Encode(response)
-		//return
 	}
 
 	for _, domain := range response.Domains {
-		result := updater.UpdateRecord(domain, response.Address, response.AddrType)
-
+		result, err := updater.UpdateRecord(domain, response.Address, response.AddrType)
+		if err != nil {
+			response.Success = false
+			response.Message = result
+			//_ = json.NewEncoder(w).Encode(response)
+			log.Errorf("couldn't update dns record: %v", err)
+			_, _ = w.Write([]byte("dnserr\n"))
+			return
+		}
 		if result != "" {
 			response.Success = false
 			response.Message = result
 			//_ = json.NewEncoder(w).Encode(response)
 			_, _ = w.Write([]byte("dnserr\n"))
-			return
 		}
 	}
 

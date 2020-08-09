@@ -1,6 +1,7 @@
-package main
+package config
 
 import (
+	"fmt"
 	"github.com/mitchellh/go-homedir"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -18,7 +19,7 @@ type Config struct {
 	DnsProvider    string
 }
 
-func (conf *Config) loadConfig(configFile string) {
+func (conf *Config) Load(configFile string) {
 	if configFile != "" {
 		viper.SetConfigFile(configFile)
 	} else {
@@ -52,6 +53,31 @@ func (conf *Config) loadConfig(configFile string) {
 	conf.NsupdateBinary = viper.GetString("nsupdate.path")
 	conf.RecordTTL = viper.GetInt("ttl")
 	conf.DnsProvider = viper.GetString("provider")
+	validateDnsProvider(conf)
+}
+
+func validateDnsProvider(c *Config) {
+	dns := c.DnsProvider
+	switch dns {
+	case "nsupdate":
+		if c.NsupdateBinary == "" {
+			c.NsupdateBinary = findNsupdate()
+		}
+		if c.NsupdateBinary == "" {
+			fmt.Print("nsupdate binary is not set")
+			os.Exit(1)
+		}
+	case "google":
+		break
+	default:
+		fmt.Printf("dns provider `%s` is not supported", c.DnsProvider)
+		os.Exit(1)
+	}
+}
+
+func findNsupdate() string {
+	//maybe use the $PATH to resolve the absolute path to nsupdate?
+	return "nsupdate"
 }
 
 func (conf *Config) setDefaults() {
