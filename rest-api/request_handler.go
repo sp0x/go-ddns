@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/sp0x/go-ddns/config"
 	"log"
 	"net"
 	"net/http"
@@ -27,7 +28,7 @@ type WebserviceResponse struct {
 	AddrType string   `json:"addr_type"`
 }
 
-func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *Config) WebserviceResponse {
+func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Config) WebserviceResponse {
 	response := WebserviceResponse{}
 	dnsRequest := dnsRequestExtractors.Extract(r)
 	if dnsRequest == nil {

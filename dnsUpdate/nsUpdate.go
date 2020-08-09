@@ -3,7 +3,10 @@ package dnsUpdate
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
+	"github.com/sp0x/go-ddns/config"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,7 +14,7 @@ import (
 )
 
 type Updater interface {
-	UpdateRecord(domain string, ipaddr string, addrType string) string
+	UpdateRecord(domain string, ipaddr string, addrType string) (string, error)
 }
 
 type NSUpdate struct {
@@ -22,6 +25,21 @@ type NSUpdate struct {
 	binary     string
 }
 
+func NewUpdater(config *config.Config) Updater {
+	switch config.DnsProvider {
+	case "google":
+		updater := NewGoogleDns(viper.GetString("project_name"))
+		updater.SetZone(config.Zone)
+		return updater
+	case "nsupdate":
+		return NewNsUpdater(config.NsupdateBinary)
+	default:
+		fmt.Printf("DNS service provider `%s` is not supported", config.DnsProvider)
+		os.Exit(1)
+	}
+	return nil
+}
+
 func NewNsUpdater(binary string) *NSUpdate {
 	ns := &NSUpdate{}
 	ns.DefaultTTL = 300
@@ -29,12 +47,12 @@ func NewNsUpdater(binary string) *NSUpdate {
 	return ns
 }
 
-func (ns *NSUpdate) UpdateRecord(domain string, ipaddr string, recordType string) string {
+func (ns *NSUpdate) UpdateRecord(domain string, ipaddr string, recordType string) (string, error) {
 	log.Println(fmt.Sprintf("%s record update request: %s -> %s", recordType, domain, ipaddr))
 
 	f, err := ioutil.TempFile(os.TempDir(), "dyndns")
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
 
 	defer func() {
@@ -59,7 +77,7 @@ func (ns *NSUpdate) UpdateRecord(domain string, ipaddr string, recordType string
 	cmd.Stderr = &stderr
 	err = cmd.Run()
 	if err != nil {
-		return err.Error() + ": " + stderr.String()
+		return "", errors.New(err.Error() + ": " + stderr.String())
 	}
-	return out.String()
+	return out.String(), nil
 }
