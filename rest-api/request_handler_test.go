@@ -17,12 +17,12 @@ func TestBuildWebserviceResponseFromRequestToReturnValidObject(t *testing.T) {
 		t.Fatalf("Expected WebserviceResponse.Success to be true")
 	}
 
-	if result.Domain != "foo" {
-		t.Fatalf("Expected WebserviceResponse.Domain to be foo")
+	if result.Host != "foo" {
+		t.Fatalf("Expected WebserviceResponse.Host to be foo")
 	}
 
-	if result.Address != "1.2.3.4" {
-		t.Fatalf("Expected WebserviceResponse.Address to be 1.2.3.4")
+	if result.DnsRecordValue != "1.2.3.4" {
+		t.Fatalf("Expected WebserviceResponse.DnsRecordValue to be 1.2.3.4")
 	}
 
 	if result.AddrType != "A" {
@@ -42,12 +42,12 @@ func TestBuildWebserviceResponseFromRequestWithXRealIPHeaderToReturnValidObject(
 		t.Fatalf("Expected WebserviceResponse.Success to be true")
 	}
 
-	if result.Domain != "foo" {
-		t.Fatalf("Expected WebserviceResponse.Domain to be foo")
+	if result.Host != "foo" {
+		t.Fatalf("Expected WebserviceResponse.Host to be foo")
 	}
 
-	if result.Address != "1.2.3.4" {
-		t.Fatalf("Expected WebserviceResponse.Address to be 1.2.3.4")
+	if result.DnsRecordValue != "1.2.3.4" {
+		t.Fatalf("Expected WebserviceResponse.DnsRecordValue to be 1.2.3.4")
 	}
 
 	if result.AddrType != "A" {
@@ -67,12 +67,12 @@ func TestBuildWebserviceResponseFromRequestWithXForwardedForHeaderToReturnValidO
 		t.Fatalf("Expected WebserviceResponse.Success to be true")
 	}
 
-	if result.Domain != "foo" {
-		t.Fatalf("Expected WebserviceResponse.Domain to be foo")
+	if result.Host != "foo" {
+		t.Fatalf("Expected WebserviceResponse.Host to be foo")
 	}
 
-	if result.Address != "1.2.3.4" {
-		t.Fatalf("Expected WebserviceResponse.Address to be 1.2.3.4")
+	if result.DnsRecordValue != "1.2.3.4" {
+		t.Fatalf("Expected WebserviceResponse.DnsRecordValue to be 1.2.3.4")
 	}
 
 	if result.AddrType != "A" {
@@ -189,12 +189,12 @@ func TestBuildWebserviceResponseFromRequestToReturnValidObjectWithDynExtractor(t
 		t.Fatalf("Expected WebserviceResponse.Success to be true")
 	}
 
-	if result.Domain != "foo" {
-		t.Fatalf("Expected WebserviceResponse.Domain to be foo")
+	if result.Host != "foo" {
+		t.Fatalf("Expected WebserviceResponse.Host to be foo")
 	}
 
-	if result.Address != "1.2.3.4" {
-		t.Fatalf("Expected WebserviceResponse.Address to be 1.2.3.4")
+	if result.DnsRecordValue != "1.2.3.4" {
+		t.Fatalf("Expected WebserviceResponse.DnsRecordValue to be 1.2.3.4")
 	}
 
 	if result.AddrType != "A" {

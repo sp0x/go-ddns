@@ -20,12 +20,12 @@ type dnsRequestExtractor struct {
 }
 
 type WebserviceResponse struct {
-	Success  bool     `json:"success"`
-	Message  string   `json:"message"`
-	Domain   string   `json:"domain"`
-	Domains  []string `json:"domains"`
-	Address  string   `json:"address"`
-	AddrType string   `json:"addr_type"`
+	Success        bool     `json:"success"`
+	Message        string   `json:"message"`
+	Host           string   `json:"domain"`
+	Domains        []string `json:"domains"`
+	DnsRecordValue string   `json:"address"`
+	AddrType       string   `json:"addr_type"`
 }
 
 func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Config) WebserviceResponse {
@@ -38,7 +38,7 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Confi
 		}
 	}
 	response.Domains = strings.Split(dnsRequest.Domain, ",")
-	response.Address = dnsRequest.Address
+	response.DnsRecordValue = dnsRequest.Address
 
 	if dnsRequest.Secret != appConfig.Secret {
 		log.Warn(fmt.Sprintf("Invalid request credential: %s", dnsRequest.Secret))
@@ -50,18 +50,18 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Confi
 	for _, domain := range response.Domains {
 		if domain == "" {
 			response.Success = false
-			response.Message = "Domain not set"
-			log.Warn("Domain not set")
+			response.Message = "Host not set"
+			log.Warn("Host not set")
 			return response
 		}
 	}
 
 	// kept in the response for compatibility reasons
-	response.Domain = strings.Join(response.Domains, ",")
+	response.Host = strings.Join(response.Domains, ",")
 
-	if ipparser.IsIPv4(response.Address) {
+	if ipparser.IsIPv4(response.DnsRecordValue) {
 		response.AddrType = "A"
-	} else if ipparser.IsIPv6(response.Address) {
+	} else if ipparser.IsIPv6(response.DnsRecordValue) {
 		response.AddrType = "AAAA"
 	} else {
 		var ip string
@@ -84,12 +84,12 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Confi
 			response.AddrType = "AAAA"
 		} else {
 			response.Success = false
-			response.Message = fmt.Sprintf("%s is neither a valid IPv4 nor IPv6 address", response.Address)
-			log.Warn(fmt.Sprintf("Invalid address: %s", response.Address))
+			response.Message = fmt.Sprintf("%s is neither a valid IPv4 nor IPv6 address", response.DnsRecordValue)
+			log.Warn(fmt.Sprintf("Invalid address: %s", response.DnsRecordValue))
 			return response
 		}
 
-		response.Address = ip
+		response.DnsRecordValue = ip
 	}
 	response.Success = true
 	return response

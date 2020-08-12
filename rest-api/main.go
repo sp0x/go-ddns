@@ -18,7 +18,7 @@ func main() {
 	updater = dnsUpdate.NewUpdater(appConfig)
 	//updater.DefaultTTL = appConfig.RecordTTL
 	//updater.Server = appConfig.Server
-	//updater.Domain = appConfig.Domain
+	//updater.Host = appConfig.Host
 	//updater.Zone = appConfig.Zone
 	router := mux.NewRouter().StrictSlash(true)
 	setupRoutes(router)
@@ -30,7 +30,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	response := BuildWebserviceResponseFromRequest(r, appConfig)
 
 	if !response.Success {
-		if response.Message == "Domain not set" {
+		if response.Message == "Host not set" {
 			w.WriteHeader(400)
 			_, _ = w.Write([]byte("notfqdn\n"))
 		} else if response.Message == "Invalid request" {
@@ -46,7 +46,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, domain := range response.Domains {
-		result, err := updater.UpdateRecord(domain, response.Address, response.AddrType)
+		result, err := updater.UpdateRecord(domain, response.DnsRecordValue, response.AddrType)
 		if err != nil {
 			response.Success = false
 			response.Message = result
@@ -56,15 +56,9 @@ func Update(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("dnserr\n"))
 			return
 		}
-		if result != "" {
-			response.Success = false
-			response.Message = result
-			//_ = json.NewEncoder(w).Encode(response)
-			_, _ = w.Write([]byte("dnserr\n"))
-		}
+		log.Infof("Updated %s record %s=%s with result: %s", response.AddrType, domain, response.DnsRecordValue, result)
 	}
-
 	response.Success = true
-	response.Message = fmt.Sprintf("Updated %s record for %s to IP address %s", response.AddrType, response.Domain, response.Address)
+	response.Message = fmt.Sprintf("Updated %s record for %s to IP address %s", response.AddrType, response.Host, response.DnsRecordValue)
 	_ = json.NewEncoder(w).Encode(response)
 }
