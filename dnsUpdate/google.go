@@ -43,8 +43,7 @@ func (gs *GoogleServiceAdapter) List(zone string, domain string, recType string)
 }
 
 func (gs *GoogleServiceAdapter) Change(zone string, change *dns.Change) (string, error) {
-	changeCall := gs.service.Changes.Create(gs.project, zone, change)
-	resp, err := changeCall.Context(gs.ctx).Do()
+	resp, err := gs.service.Changes.Create(gs.project, zone, change).Context(gs.ctx).Do()
 	if err != nil {
 		return "", err
 	}
@@ -120,12 +119,9 @@ func (ns *GoogleCloudDns) UpdateRecord(domain string, value string, recordType s
 	}
 	change.Deletions = existingRecords
 
-	//changeCall := ns.service.Changes.Create(ns.project, ns.zone, change)
-	//resp, err := changeCall.Context(ns.ctx).Do()
 	resp, err := ns.serviceAdapter.Change(ns.zone, change)
 	if err != nil {
 		return "", err
 	}
-	//return resp.Status, nil
 	return resp, nil
 }

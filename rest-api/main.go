@@ -16,7 +16,6 @@ var updater dnsUpdate.Updater
 func main() {
 	appConfig.Load("/etc/goddns.yml")
 	updater = dnsUpdate.NewUpdater(appConfig)
-	//_, _ = updater.UpdateRecord("vaskovasilev.eu","192.38.140.182","A")
 	//updater.DefaultTTL = appConfig.RecordTTL
 	//updater.Server = appConfig.Server
 	//updater.Domain = appConfig.Domain
