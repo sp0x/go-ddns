@@ -15,6 +15,7 @@ import (
 
 type Updater interface {
 	UpdateRecord(domain string, ipaddr string, addrType string) (string, error)
+	SetDefaultTTL(ttl int)
 }
 
 type NSUpdate struct {
@@ -26,18 +27,21 @@ type NSUpdate struct {
 }
 
 func NewUpdater(config *config.Config) Updater {
+	var updater Updater
+
 	switch config.DnsProvider {
 	case "google":
-		updater := NewGoogleDns(viper.GetString("project_name"))
-		updater.SetZone(config.Zone)
-		return updater
+		googleUpdater := NewGoogleDns(viper.GetString("project_name"))
+		googleUpdater.SetZone(config.Zone)
+		updater = googleUpdater
 	case "nsupdate":
-		return NewNsUpdater(config.NsupdateBinary)
+		updater = NewNsUpdater(config.NsupdateBinary)
 	default:
 		fmt.Printf("DNS service provider `%s` is not supported", config.DnsProvider)
 		os.Exit(1)
 	}
-	return nil
+	updater.SetDefaultTTL(config.RecordTTL)
+	return updater
 }
 
 func NewNsUpdater(binary string) *NSUpdate {
@@ -45,6 +49,10 @@ func NewNsUpdater(binary string) *NSUpdate {
 	ns.DefaultTTL = 300
 	ns.binary = binary
 	return ns
+}
+
+func (ns *NSUpdate) SetDefaultTTL(ttl int) {
+	ns.DefaultTTL = ttl
 }
 
 func (ns *NSUpdate) UpdateRecord(domain string, ipaddr string, recordType string) (string, error) {

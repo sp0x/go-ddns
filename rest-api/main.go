@@ -16,10 +16,6 @@ var updater dnsUpdate.Updater
 func main() {
 	appConfig.Load("/etc/goddns.yml")
 	updater = dnsUpdate.NewUpdater(appConfig)
-	//updater.DefaultTTL = appConfig.RecordTTL
-	//updater.Server = appConfig.Server
-	//updater.Host = appConfig.Host
-	//updater.Zone = appConfig.Zone
 	router := mux.NewRouter().StrictSlash(true)
 	setupRoutes(router)
 	log.Println("Dyndns REST services listening on 0.0.0.0:8080...")

@@ -101,8 +101,15 @@ func (ns *GoogleCloudDns) HasAFor(name string) (bool, error) {
 	return len(records) > 0, nil
 }
 
+func (ns *GoogleCloudDns) SetDefaultTTL(ttl int) {
+	ns.ttl = int64(ttl)
+}
+
 func (ns *GoogleCloudDns) UpdateRecord(domain string, value string, recordType string) (string, error) {
 	// see https://cloud.google.com/dns/docs/records/json-record for information
+	if domain[len(domain)-1] != '.' {
+		domain += "."
+	}
 	var record = &dns.ResourceRecordSet{
 		Type:    recordType,
 		Name:    domain,
