@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/sp0x/go-ddns/config"
-	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -41,7 +41,7 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Confi
 	response.Address = dnsRequest.Address
 
 	if dnsRequest.Secret != appConfig.Secret {
-		log.Println(fmt.Sprintf("Invalid shared secret: %s", dnsRequest.Secret))
+		log.Warn(fmt.Sprintf("Invalid request credential: %s", dnsRequest.Secret))
 		response.Success = false
 		response.Message = "Invalid Credentials"
 		return response
@@ -51,7 +51,7 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Confi
 		if domain == "" {
 			response.Success = false
 			response.Message = "Domain not set"
-			log.Println("Domain not set")
+			log.Warn("Domain not set")
 			return response
 		}
 	}
@@ -75,7 +75,7 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Confi
 		if err != nil {
 			response.Success = false
 			response.Message = fmt.Sprintf("%q is neither a valid IPv4 nor IPv6 address", r.RemoteAddr)
-			log.Println(fmt.Sprintf("Invalid address: %q", r.RemoteAddr))
+			log.Warn(fmt.Sprintf("Invalid address: %q", r.RemoteAddr))
 			return response
 		}
 		if ipparser.IsIPv4(ip) {
@@ -85,7 +85,7 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Confi
 		} else {
 			response.Success = false
 			response.Message = fmt.Sprintf("%s is neither a valid IPv4 nor IPv6 address", response.Address)
-			log.Println(fmt.Sprintf("Invalid address: %s", response.Address))
+			log.Warn(fmt.Sprintf("Invalid address: %s", response.Address))
 			return response
 		}
 

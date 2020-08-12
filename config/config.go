@@ -31,6 +31,7 @@ func (conf *Config) Load(configFile string) {
 		viper.SetConfigName("goddns")
 	}
 	viper.AutomaticEnv()
+	log.SetLevel(log.InfoLevel)
 	if viper.GetBool("verbose") {
 		log.SetLevel(log.DebugLevel)
 	}
@@ -46,7 +47,7 @@ func (conf *Config) Load(configFile string) {
 		}
 	}
 
-	conf.Secret = viper.GetString("secret")
+	conf.Secret = viper.GetString("api_key")
 	conf.Server = viper.GetString("nsupdate.server")
 	conf.Zone = viper.GetString("zone")
 	conf.Domain = viper.GetString("domain")

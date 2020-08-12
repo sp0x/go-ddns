@@ -31,10 +31,17 @@ func Update(w http.ResponseWriter, r *http.Request) {
 
 	if !response.Success {
 		if response.Message == "Domain not set" {
+			w.WriteHeader(400)
 			_, _ = w.Write([]byte("notfqdn\n"))
+		} else if response.Message == "Invalid request" {
+			w.WriteHeader(400)
+			_, _ = w.Write([]byte("badreq\n"))
 		} else {
+			w.WriteHeader(403)
 			_, _ = w.Write([]byte("badauth\n"))
 		}
+		return
+		//non-router response.
 		//_ = json.NewEncoder(w).Encode(response)
 	}
 
@@ -45,6 +52,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 			response.Message = result
 			//_ = json.NewEncoder(w).Encode(response)
 			log.Errorf("couldn't update dns record: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("dnserr\n"))
 			return
 		}
