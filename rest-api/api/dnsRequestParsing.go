@@ -1,6 +1,14 @@
-package main
+package api
 
-import "net/http"
+import (
+	"net/http"
+)
+
+type dnsRequestExtractor struct {
+	Address func(request *http.Request) string
+	Secret  func(request *http.Request) string
+	Domain  func(request *http.Request) string
+}
 
 type RequestExtractionSet []dnsRequestExtractor
 
