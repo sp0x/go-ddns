@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/sp0x/go-ddns/config"
@@ -26,6 +25,21 @@ type WebserviceResponse struct {
 	Domains        []string `json:"domains"`
 	DnsRecordValue string   `json:"address"`
 	AddrType       string   `json:"addr_type"`
+}
+
+func parseRecordValue(extractedValue string, r *http.Request) (string, string, error) {
+	hostValue := extractedValue
+	if hostValue == "" {
+		hostValue = getRequestRemoteAddress(r)
+	}
+	if ipparser.IsIPv4(hostValue) {
+		return hostValue, "A", nil
+	} else if ipparser.IsIPv6(hostValue) {
+		return hostValue, "AAAA", nil
+	} else {
+		log.Warn(fmt.Sprintf("Invalid address: %s", hostValue))
+		return "", "", fmt.Errorf("%s is neither a valid IPv4 nor IPv6 address", hostValue)
+	}
 }
 
 func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Config) WebserviceResponse {
@@ -56,46 +70,20 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Confi
 		}
 	}
 
+	var err error
+	response.DnsRecordValue, response.AddrType, err = parseRecordValue(response.DnsRecordValue, r)
+	if err != nil {
+		response.Success = false
+		response.Message = err.Error()
+		return response
+	}
 	// kept in the response for compatibility reasons
 	response.Host = strings.Join(response.Domains, ",")
-
-	if ipparser.IsIPv4(response.DnsRecordValue) {
-		response.AddrType = "A"
-	} else if ipparser.IsIPv6(response.DnsRecordValue) {
-		response.AddrType = "AAAA"
-	} else {
-		var ip string
-		var err error
-
-		ip, err = getRequestRemoteAddress(r)
-		if ip == "" {
-			ip, _, err = net.SplitHostPort(r.RemoteAddr)
-		}
-
-		if err != nil {
-			response.Success = false
-			response.Message = fmt.Sprintf("%q is neither a valid IPv4 nor IPv6 address", r.RemoteAddr)
-			log.Warn(fmt.Sprintf("Invalid address: %q", r.RemoteAddr))
-			return response
-		}
-		if ipparser.IsIPv4(ip) {
-			response.AddrType = "A"
-		} else if ipparser.IsIPv6(ip) {
-			response.AddrType = "AAAA"
-		} else {
-			response.Success = false
-			response.Message = fmt.Sprintf("%s is neither a valid IPv4 nor IPv6 address", response.DnsRecordValue)
-			log.Warn(fmt.Sprintf("Invalid address: %s", response.DnsRecordValue))
-			return response
-		}
-
-		response.DnsRecordValue = ip
-	}
 	response.Success = true
 	return response
 }
 
-func getRequestRemoteAddress(r *http.Request) (string, error) {
+func getRequestRemoteAddress(r *http.Request) string {
 	for _, h := range []string{"X-Real-Ip", "X-Forwarded-For"} {
 		addresses := strings.Split(r.Header.Get(h), ",")
 		// march from right to left until we get a public address
@@ -108,10 +96,11 @@ func getRequestRemoteAddress(r *http.Request) (string, error) {
 				// bad address, go to next
 				continue
 			}
-			return ip, nil
+			return ip
 		}
 	}
-	return "", errors.New("no match")
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	return ip
 }
 
 type ipRange struct {
