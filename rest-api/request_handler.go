@@ -43,44 +43,52 @@ func parseRecordValue(extractedValue string, r *http.Request) (string, string, e
 }
 
 func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Config) WebserviceResponse {
-	response := WebserviceResponse{}
+	dnsReq := WebserviceResponse{}
 	dnsRequest := dnsRequestExtractors.Extract(r)
 	if dnsRequest == nil {
 		return WebserviceResponse{
 			Success: false,
-			Message: "Invalid request",
+			Message: "Invalid dnsReq",
 		}
 	}
-	response.Domains = strings.Split(dnsRequest.Domain, ",")
-	response.DnsRecordValue = dnsRequest.Address
+	dnsReq.Domains = strings.Split(dnsRequest.Domain, ",")
+	dnsReq.DnsRecordValue = dnsRequest.Address
 
 	if dnsRequest.Secret != appConfig.Secret {
-		log.Warn(fmt.Sprintf("Invalid request credential: %s", dnsRequest.Secret))
-		response.Success = false
-		response.Message = "Invalid Credentials"
-		return response
+		log.Warn(fmt.Sprintf("Invalid dnsReq credential: %s", dnsRequest.Secret))
+		dnsReq.Success = false
+		dnsReq.Message = "Invalid Credentials"
+		return dnsReq
 	}
 
-	for _, domain := range response.Domains {
+	for i, domain := range dnsReq.Domains {
 		if domain == "" {
-			response.Success = false
-			response.Message = "Host not set"
+			dnsReq.Success = false
+			dnsReq.Message = "Host not set"
 			log.Warn("Host not set")
-			return response
+			return dnsReq
 		}
+		dnsReq.Domains[i] = parseFullDomain(domain, appConfig)
 	}
 
 	var err error
-	response.DnsRecordValue, response.AddrType, err = parseRecordValue(response.DnsRecordValue, r)
+	dnsReq.DnsRecordValue, dnsReq.AddrType, err = parseRecordValue(dnsReq.DnsRecordValue, r)
 	if err != nil {
-		response.Success = false
-		response.Message = err.Error()
-		return response
+		dnsReq.Success = false
+		dnsReq.Message = err.Error()
+		return dnsReq
 	}
-	// kept in the response for compatibility reasons
-	response.Host = strings.Join(response.Domains, ",")
-	response.Success = true
-	return response
+	// kept in the dnsReq for compatibility reasons
+	dnsReq.Host = strings.Join(dnsReq.Domains, ",")
+	dnsReq.Success = true
+	return dnsReq
+}
+
+func parseFullDomain(requiredHostNamePart string, c *config.Config) string {
+	if strings.HasSuffix(requiredHostNamePart, "."+c.Domain) {
+		return requiredHostNamePart
+	}
+	return fmt.Sprintf("%s.%s", requiredHostNamePart, c.Domain)
 }
 
 func getRequestRemoteAddress(r *http.Request) string {

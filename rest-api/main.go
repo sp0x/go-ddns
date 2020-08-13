@@ -23,13 +23,13 @@ func main() {
 }
 
 func Update(w http.ResponseWriter, r *http.Request) {
-	response := BuildWebserviceResponseFromRequest(r, appConfig)
+	dnsRequest := BuildWebserviceResponseFromRequest(r, appConfig)
 
-	if !response.Success {
-		if response.Message == "Host not set" {
+	if !dnsRequest.Success {
+		if dnsRequest.Message == "Host not set" {
 			w.WriteHeader(400)
 			_, _ = w.Write([]byte("notfqdn\n"))
-		} else if response.Message == "Invalid request" {
+		} else if dnsRequest.Message == "Invalid request" {
 			w.WriteHeader(400)
 			_, _ = w.Write([]byte("badreq\n"))
 		} else {
@@ -37,24 +37,24 @@ func Update(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("badauth\n"))
 		}
 		return
-		//non-router response.
-		//_ = json.NewEncoder(w).Encode(response)
+		//non-router dnsRequest.
+		//_ = json.NewEncoder(w).Encode(dnsRequest)
 	}
 
-	for _, domain := range response.Domains {
-		result, err := updater.UpdateRecord(domain, response.DnsRecordValue, response.AddrType)
+	for _, domain := range dnsRequest.Domains {
+		result, err := updater.UpdateRecord(domain, dnsRequest.DnsRecordValue, dnsRequest.AddrType)
 		if err != nil {
-			response.Success = false
-			response.Message = result
-			//_ = json.NewEncoder(w).Encode(response)
+			dnsRequest.Success = false
+			dnsRequest.Message = result
+			//_ = json.NewEncoder(w).Encode(dnsRequest)
 			log.Errorf("couldn't update dns record: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("dnserr\n"))
 			return
 		}
-		log.Infof("Updated %s record %s=%s with result: %s", response.AddrType, domain, response.DnsRecordValue, result)
+		log.Infof("Updated %s record %s=%s with result: %s", dnsRequest.AddrType, domain, dnsRequest.DnsRecordValue, result)
 	}
-	response.Success = true
-	response.Message = fmt.Sprintf("Updated %s record for %s to IP address %s", response.AddrType, response.Host, response.DnsRecordValue)
-	_ = json.NewEncoder(w).Encode(response)
+	dnsRequest.Success = true
+	dnsRequest.Message = fmt.Sprintf("Updated %s record for %s to IP address %s", dnsRequest.AddrType, dnsRequest.Host, dnsRequest.DnsRecordValue)
+	_ = json.NewEncoder(w).Encode(dnsRequest)
 }
