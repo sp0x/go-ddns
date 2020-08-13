@@ -1,9 +1,8 @@
-package main
+package go_ddns
 
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"github.com/sp0x/go-ddns/config"
 	"github.com/sp0x/go-ddns/dnsUpdate"
@@ -11,20 +10,27 @@ import (
 	"net/http"
 )
 
-var appConfig = &config.Config{}
-var updater dnsUpdate.Updater
+var initializedCloudFunc bool
+var cloudFuncConfig = &config.Config{}
+var cloudUpdater dnsUpdate.Updater
 
-func main() {
-	appConfig.Load("/etc/goddns.yml")
-	updater = dnsUpdate.NewUpdater(appConfig)
-	router := mux.NewRouter().StrictSlash(true)
-	setupRoutes(router)
-	log.Println("Dyndns REST services listening on 0.0.0.0:8080...")
-	log.Fatal(http.ListenAndServe(":8080", router))
+func initialize() {
+	if initializedCloudFunc {
+		return
+	}
+	cloudFuncConfig.Load("")
+	//API_KEY
+	//ZONE
+	//DOMAIN
+	//TTL
+	//PROVIDER
+	cloudUpdater = dnsUpdate.NewUpdater(cloudFuncConfig)
+	initializedCloudFunc = true
 }
 
-func Update(w http.ResponseWriter, r *http.Request) {
-	dnsRequest := api.BuildWebserviceResponseFromRequest(r, appConfig)
+func GoDDns(w http.ResponseWriter, r *http.Request) {
+	initialize()
+	dnsRequest := api.BuildWebserviceResponseFromRequest(r, cloudFuncConfig)
 
 	if !dnsRequest.Success {
 		if dnsRequest.Message == "Host not set" {
@@ -43,7 +49,7 @@ func Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, domain := range dnsRequest.Domains {
-		result, err := updater.UpdateRecord(domain, dnsRequest.DnsRecordValue, dnsRequest.AddrType)
+		result, err := cloudUpdater.UpdateRecord(domain, dnsRequest.DnsRecordValue, dnsRequest.AddrType)
 		if err != nil {
 			dnsRequest.Success = false
 			dnsRequest.Message = result

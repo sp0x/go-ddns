@@ -1,0 +1,15 @@
+steps:
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - functions
+      - deploy
+      - goddns
+      - --source=.
+      - --entry-point
+      - GoDDns
+      - --runtime
+      - go113
+      - --trigger-http
+      - --allow-unauthenticated
+    env: ['GOPATH=/gopath', 'ZONE=vaskovasileveu', 'DOMAIN=vaskovasilev.eu', 'TTL=300', 'PROVIDER=google']
+    dir: './'

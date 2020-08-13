@@ -1,22 +1,15 @@
-package main
+package api
 
 import (
 	"bytes"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/sp0x/go-ddns/config"
+	"github.com/sp0x/go-ddns/rest-api/ipparser"
 	"net"
 	"net/http"
 	"strings"
-
-	"github.com/sp0x/go-ddns/rest-api/ipparser"
 )
-
-type dnsRequestExtractor struct {
-	Address func(request *http.Request) string
-	Secret  func(request *http.Request) string
-	Domain  func(request *http.Request) string
-}
 
 type WebserviceResponse struct {
 	Success        bool     `json:"success"`
@@ -25,21 +18,6 @@ type WebserviceResponse struct {
 	Domains        []string `json:"domains"`
 	DnsRecordValue string   `json:"address"`
 	AddrType       string   `json:"addr_type"`
-}
-
-func parseRecordValue(extractedValue string, r *http.Request) (string, string, error) {
-	hostValue := extractedValue
-	if hostValue == "" {
-		hostValue = getRequestRemoteAddress(r)
-	}
-	if ipparser.IsIPv4(hostValue) {
-		return hostValue, "A", nil
-	} else if ipparser.IsIPv6(hostValue) {
-		return hostValue, "AAAA", nil
-	} else {
-		log.Warn(fmt.Sprintf("Invalid address: %s", hostValue))
-		return "", "", fmt.Errorf("%s is neither a valid IPv4 nor IPv6 address", hostValue)
-	}
 }
 
 func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Config) WebserviceResponse {
@@ -82,6 +60,21 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Confi
 	dnsReq.Host = strings.Join(dnsReq.Domains, ",")
 	dnsReq.Success = true
 	return dnsReq
+}
+
+func parseRecordValue(extractedValue string, r *http.Request) (string, string, error) {
+	hostValue := extractedValue
+	if hostValue == "" {
+		hostValue = getRequestRemoteAddress(r)
+	}
+	if ipparser.IsIPv4(hostValue) {
+		return hostValue, "A", nil
+	} else if ipparser.IsIPv6(hostValue) {
+		return hostValue, "AAAA", nil
+	} else {
+		log.Warn(fmt.Sprintf("Invalid address: %s", hostValue))
+		return "", "", fmt.Errorf("%s is neither a valid IPv4 nor IPv6 address", hostValue)
+	}
 }
 
 func parseFullDomain(requiredHostNamePart string, c *config.Config) string {
