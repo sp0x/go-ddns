@@ -3,7 +3,7 @@ steps:
     args:
       - functions
       - deploy
-      - testCd
+      - goddns
       - --source=.
       - --entry-point
       - GoDDns
