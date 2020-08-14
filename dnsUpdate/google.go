@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/dns/v1"
 	"google.golang.org/api/option"
-	"log"
 	"os"
 )
 
@@ -120,12 +121,14 @@ func (ns *GoogleCloudDns) UpdateRecord(domain string, value string, recordType s
 		Additions: []*dns.ResourceRecordSet{record},
 	}
 	//We have to delete any existing records
+
 	existingRecords, err := ns.ListRecordsWithName(domain, recordType)
 	if err != nil {
 		return "", err
 	}
 	change.Deletions = existingRecords
-
+	log.Debugf("Updating %s record: ", ns.zone)
+	log.Debug(spew.Sdump(change))
 	resp, err := ns.serviceAdapter.Change(ns.zone, change)
 	if err != nil {
 		return "", err
