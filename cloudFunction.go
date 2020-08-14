@@ -54,7 +54,7 @@ func GoDDns(w http.ResponseWriter, r *http.Request) {
 			dnsRequest.Success = false
 			dnsRequest.Message = result
 			//_ = json.NewEncoder(w).Encode(dnsRequest)
-			log.Errorf("couldn't update dns record: %v", err)
+			log.Errorf("couldn't update dns record for %v[%v]='%v': %v", domain, dnsRequest.AddrType, dnsRequest.DnsRecordValue, err)
 			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("dnserr\n"))
 			return
