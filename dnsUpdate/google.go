@@ -124,7 +124,7 @@ func (ns *GoogleCloudDns) UpdateRecord(domain string, value string, recordType s
 
 	existingRecords, err := ns.ListRecordsWithName(domain, recordType)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("zone listing err: %v", err)
 	}
 	change.Deletions = existingRecords
 	log.Debugf("Updating %s record: ", ns.zone)
