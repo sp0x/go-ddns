@@ -33,7 +33,7 @@ type GoogleServiceAdapter struct {
 }
 
 func (gs *GoogleServiceAdapter) List(zone string, domain string, recType string) ([]*dns.ResourceRecordSet, error) {
-	log.Infof("Listing zone: %v for %v[%v]", zone, domain, recType)
+	log.Debugf("Listing zone: %v for %v[%v]", zone, domain, recType)
 	records, err := gs.service.ResourceRecordSets.List(gs.project, zone).
 		Name(domain).
 		Type(recType).
