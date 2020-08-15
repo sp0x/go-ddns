@@ -5,7 +5,7 @@ Accept: application/json
 ###
 
 #Subdomain
-GET http://localhost:8080/update?secret=nesdrnw4e5gwsr&domain=mamavesi
+GET http://localhost:8080/update?secret=nesdrnw4e5gwsr&addr=1.1.1.1&domain=mamavesi
 Accept: application/json
 
 ###
@@ -16,3 +16,4 @@ GET http://31b1e4a9cb70.ngrok.io/update?secret=nesdrnw4e5gwsr&domain=vaskovasile
 Accept: application/json
 
 ###
+GET https://us-central1-demoproject-280919.cloudfunctions.net/goddns?secret=secret&addr=1.1.1.1&domain=mamavesi

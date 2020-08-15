@@ -39,6 +39,7 @@ func (gs *GoogleServiceAdapter) List(zone string, domain string, recType string)
 		Type(recType).
 		Do()
 	if err != nil {
+		log.Errorf("couldn't list records: %v", err)
 		return nil, err
 	}
 	return records.Rrsets, nil
