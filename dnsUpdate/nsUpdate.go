@@ -31,7 +31,8 @@ func NewUpdater(config *config.Config) Updater {
 
 	switch config.DnsProvider {
 	case "google":
-		googleUpdater := NewGoogleDns(viper.GetString("project_name"))
+		project := viper.GetString("GCP_PROJECT")
+		googleUpdater := NewGoogleDns(project)
 		googleUpdater.SetZone(config.Zone)
 		updater = googleUpdater
 	case "nsupdate":

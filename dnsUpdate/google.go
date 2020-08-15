@@ -54,6 +54,9 @@ func (gs *GoogleServiceAdapter) Change(zone string, change *dns.Change) (string,
 }
 
 func NewGoogleDns(projectName string) *GoogleCloudDns {
+	if projectName != "" {
+		panic("project name was empty")
+	}
 	output := &GoogleCloudDns{project: projectName, ttl: 300}
 	output.ctx = context.Background()
 	dnsService, err := dns.NewService(output.ctx, option.WithScopes(dns.CloudPlatformScope))
