@@ -35,11 +35,6 @@ func NewUpdater(config *config.Config) Updater {
 		if project == "" {
 			project = viper.GetString("GCLOUD_PROJECT")
 		}
-		if project == "" {
-			for _, pair := range os.Environ() {
-				fmt.Println(pair)
-			}
-		}
 		googleUpdater := NewGoogleDns(project)
 		googleUpdater.SetZone(config.Zone)
 		updater = googleUpdater
