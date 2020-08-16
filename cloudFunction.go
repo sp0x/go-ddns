@@ -19,11 +19,6 @@ func initialize() {
 		return
 	}
 	cloudFuncConfig.Load("")
-	//API_KEY
-	//ZONE
-	//DOMAIN
-	//TTL
-	//PROVIDER
 	cloudUpdater = dnsUpdate.NewUpdater(cloudFuncConfig)
 	initializedCloudFunc = true
 }

@@ -1,10 +1,11 @@
-# Dynamic DNS with Docker, Go and Bind9
+# Dynamic DNS in Go
 
-![DockerHub build status](https://dockerbuildbadges.quelltext.eu/status.svg?organization=davd&repository=docker-ddns)
-![Travis build status](https://travis-ci.com/dprandzioch/docker-ddns.svg?branch=master)
+![DockerHub build status](https://dockerbuildbadges.quelltext.eu/status.svg?organization=sp0x&repository=go-ddns)
+![Travis build status](https://travis-ci.com/sp0x/go-ddns.svg?branch=master)
 
-This package allows you to set up a dynamic DNS server that allows you to connect to
-devices at home from anywhere in the world. All you need is a cheap VPS, a domain and access to it's nameserver.
+This package allows you to set up a dynamic DNS service, which allows you to connect to
+devices at home from anywhere in the world. 
+All you need is a cheap VPS/cloud function, and domain with optional access to it's dns.
 
 ![Connect to your NAS from work](https://raw.githubusercontent.com/dprandzioch/docker-ddns/develop/connect-to-your-nas-from-work.png)
 
@@ -12,13 +13,30 @@ devices at home from anywhere in the world. All you need is a cheap VPS, a domai
 
 You can either take the image from DockerHub or build it on your own.
 
-## Dns updater support
+### Dns updater support
 **nsupdate** - No configuration is needed here  
 **Google's Cloud DNS** - you need to configure the project name and the path to your service credentials file.  
 This could be done through the environment variables:
 ```yaml
-PROJECT_NAME=.... # Your project name
+GCP_PROJECT=.... # Your project name
 GOOGLE_APPLICATION_CREDENTIALS=./keys.json # The path to your service credentials.
+```
+
+### Using google cloud functions
+This project offers an http endpoint that can be used as a cloud function.
+With that you can easily deploy your dynamic DNS in google's cloud functions.
+The exported function is: `GoDDns`  
+You can deploy it with google's cloud build(look at cloudbuild.yaml) or manually by uploading the source code and defining your function.
+
+Make sure you configure your function's environment variables. Here is an example configuration:
+```yaml
+API_KEY=keepThisSecret
+ZONE=myzone # the name of your dns zone
+DOMAIN=my-domain-to-manage.com # the domain you want to manage, this is optional
+TTL=300 # default ttl
+PROVIDER=google # this is required
+VERBOSE=true # if you want more logs
+GCP_PROJECT=my-google-project-name
 ```
 
 ### Using DockerHub
