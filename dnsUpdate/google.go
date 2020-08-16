@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/dns/v1"
 	"google.golang.org/api/option"
-	"log"
 	"os"
 )
 
@@ -32,11 +33,13 @@ type GoogleServiceAdapter struct {
 }
 
 func (gs *GoogleServiceAdapter) List(zone string, domain string, recType string) ([]*dns.ResourceRecordSet, error) {
+	log.Debugf("[%v] Listing zone: %v for %v[%v]", gs.project, zone, domain, recType)
 	records, err := gs.service.ResourceRecordSets.List(gs.project, zone).
 		Name(domain).
 		Type(recType).
 		Do()
 	if err != nil {
+		log.Errorf("couldn't list records: %v", err)
 		return nil, err
 	}
 	return records.Rrsets, nil
@@ -51,6 +54,9 @@ func (gs *GoogleServiceAdapter) Change(zone string, change *dns.Change) (string,
 }
 
 func NewGoogleDns(projectName string) *GoogleCloudDns {
+	if projectName == "" {
+		panic("project name was empty")
+	}
 	output := &GoogleCloudDns{project: projectName, ttl: 300}
 	output.ctx = context.Background()
 	dnsService, err := dns.NewService(output.ctx, option.WithScopes(dns.CloudPlatformScope))
@@ -120,12 +126,14 @@ func (ns *GoogleCloudDns) UpdateRecord(domain string, value string, recordType s
 		Additions: []*dns.ResourceRecordSet{record},
 	}
 	//We have to delete any existing records
+
 	existingRecords, err := ns.ListRecordsWithName(domain, recordType)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("zone listing err: %v", err)
 	}
 	change.Deletions = existingRecords
-
+	log.Debugf("Updating %s record: ", ns.zone)
+	log.Debug(spew.Sdump(change))
 	resp, err := ns.serviceAdapter.Change(ns.zone, change)
 	if err != nil {
 		return "", err

@@ -32,9 +32,6 @@ func (conf *Config) Load(configFile string) {
 	}
 	viper.AutomaticEnv()
 	log.SetLevel(log.InfoLevel)
-	if viper.GetBool("verbose") {
-		log.SetLevel(log.DebugLevel)
-	}
 	conf.setDefaults()
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
@@ -54,6 +51,10 @@ func (conf *Config) Load(configFile string) {
 	conf.NsupdateBinary = viper.GetString("nsupdate.path")
 	conf.RecordTTL = viper.GetInt("ttl")
 	conf.DnsProvider = viper.GetString("provider")
+	verboseValue := viper.GetString("VERBOSE")
+	if verboseValue != "" {
+		log.SetLevel(log.DebugLevel)
+	}
 	validateDnsProvider(conf)
 }
 
