@@ -110,7 +110,6 @@ For the DynDNS compatible fields please see Dyn's documentation here:
 https://help.dyn.com/remote-access-api/perform-update/
 ```
 
-
 ### DynDNS compatible API
 
 This package contains a DynDNS compatible handler for convenience and for use cases
@@ -130,6 +129,14 @@ The handlers will listen on:
 **Password is the shared secret provided as an ENV variable**
 
 #### Examples
+
+#### Using a simple crontab script
+You can add the file `scripts/goddns.sh` as a crontab job. This would make requests to the 
+API to update your DNS.  
+Make sure to have these environment variables: 
+- ENDPOINT
+- API_KEY
+- SUBDOMAIN
 
 An example on the ddclient (Linux DDNS client) based Ubiquiti router line:
 
