@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"github.com/sp0x/go-ddns/config"
@@ -9,6 +9,7 @@ import (
 func TestBuildWebserviceResponseFromRequestToReturnValidObject(t *testing.T) {
 	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
+	appConfig.Domain = "example.com"
 
 	req, _ := http.NewRequest("GET", "/update?secret=changeme&domain=foo&addr=1.2.3.4", nil)
 	result := BuildWebserviceResponseFromRequest(req, appConfig)
@@ -17,8 +18,8 @@ func TestBuildWebserviceResponseFromRequestToReturnValidObject(t *testing.T) {
 		t.Fatalf("Expected WebserviceResponse.Success to be true")
 	}
 
-	if result.Host != "foo" {
-		t.Fatalf("Expected WebserviceResponse.Host to be foo")
+	if result.Host != "foo.example.com" {
+		t.Fatalf("Expected WebserviceResponse.Host to be foo.example.com, but was `%v`", result.Host)
 	}
 
 	if result.DnsRecordValue != "1.2.3.4" {
@@ -33,6 +34,7 @@ func TestBuildWebserviceResponseFromRequestToReturnValidObject(t *testing.T) {
 func TestBuildWebserviceResponseFromRequestWithXRealIPHeaderToReturnValidObject(t *testing.T) {
 	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
+	appConfig.Domain = "example.com"
 
 	req, _ := http.NewRequest("GET", "/update?secret=changeme&domain=foo", nil)
 	req.Header.Add("X-Real-Ip", "1.2.3.4")
@@ -42,8 +44,8 @@ func TestBuildWebserviceResponseFromRequestWithXRealIPHeaderToReturnValidObject(
 		t.Fatalf("Expected WebserviceResponse.Success to be true")
 	}
 
-	if result.Host != "foo" {
-		t.Fatalf("Expected WebserviceResponse.Host to be foo")
+	if result.Host != "foo.example.com" {
+		t.Fatalf("Expected WebserviceResponse.Host to be foo.example.com")
 	}
 
 	if result.DnsRecordValue != "1.2.3.4" {
@@ -58,6 +60,7 @@ func TestBuildWebserviceResponseFromRequestWithXRealIPHeaderToReturnValidObject(
 func TestBuildWebserviceResponseFromRequestWithXForwardedForHeaderToReturnValidObject(t *testing.T) {
 	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
+	appConfig.Domain = "example.com"
 
 	req, _ := http.NewRequest("GET", "/update?secret=changeme&domain=foo", nil)
 	req.Header.Add("X-Forwarded-For", "1.2.3.4")
@@ -67,8 +70,8 @@ func TestBuildWebserviceResponseFromRequestWithXForwardedForHeaderToReturnValidO
 		t.Fatalf("Expected WebserviceResponse.Success to be true")
 	}
 
-	if result.Host != "foo" {
-		t.Fatalf("Expected WebserviceResponse.Host to be foo")
+	if result.Host != "foo.example.com" {
+		t.Fatalf("Expected WebserviceResponse.Host to be foo.example.com")
 	}
 
 	if result.DnsRecordValue != "1.2.3.4" {
@@ -119,6 +122,7 @@ func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenNoDomainIsGi
 func TestBuildWebserviceResponseFromRequestWithMultipleDomains(t *testing.T) {
 	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
+	appConfig.Domain = "example.com"
 
 	req, _ := http.NewRequest("GET", "/update?secret=changeme&domain=foo,bar&addr=1.2.3.4", nil)
 	result := BuildWebserviceResponseFromRequest(req, appConfig)
@@ -131,12 +135,12 @@ func TestBuildWebserviceResponseFromRequestWithMultipleDomains(t *testing.T) {
 		t.Fatalf("Expected WebserviceResponse.Domains length to be 2")
 	}
 
-	if result.Domains[0] != "foo" {
-		t.Fatalf("Expected WebserviceResponse.Domains[0] to equal 'foo'")
+	if result.Domains[0] != "foo.example.com" {
+		t.Fatalf("Expected WebserviceResponse.Domains[0] to equal 'foo.example.com'")
 	}
 
-	if result.Domains[1] != "bar" {
-		t.Fatalf("Expected WebserviceResponse.Domains[1] to equal 'bar'")
+	if result.Domains[1] != "bar.example.com" {
+		t.Fatalf("Expected WebserviceResponse.Domains[1] to equal 'bar.example.com'")
 	}
 }
 
@@ -179,6 +183,7 @@ func TestBuildWebserviceResponseFromRequestToReturnInvalidObjectWhenInvalidAddre
 func TestBuildWebserviceResponseFromRequestToReturnValidObjectWithDynExtractor(t *testing.T) {
 	var appConfig = &config.Config{}
 	appConfig.Secret = "changeme"
+	appConfig.Domain = "example.com"
 
 	req, _ := http.NewRequest("GET", "/nic/update?hostname=foo&myip=1.2.3.4", nil)
 	req.Header.Add("Authorization", "Basic dXNlcm5hbWU6Y2hhbmdlbWU=") // This is the base-64 encoded value of "username:changeme"
@@ -189,7 +194,7 @@ func TestBuildWebserviceResponseFromRequestToReturnValidObjectWithDynExtractor(t
 		t.Fatalf("Expected WebserviceResponse.Success to be true")
 	}
 
-	if result.Host != "foo" {
+	if result.Host != "foo.example.com" {
 		t.Fatalf("Expected WebserviceResponse.Host to be foo")
 	}
 
