@@ -22,4 +22,4 @@
 .idea/modules.xml
 .idea/vcs.xml
 keys
-!/cloudbuild.yaml
+lsp/
