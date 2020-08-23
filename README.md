@@ -1,21 +1,18 @@
 # Dynamic DNS in Go
 
-![DockerHub build status](https://dockerbuildbadges.quelltext.eu/status.svg?organization=sp0x&repository=go-ddns)
 ![Travis build status](https://travis-ci.com/sp0x/go-ddns.svg?branch=master)
 
 This package allows you to set up a dynamic DNS service, which allows you to connect to
 devices at home from anywhere in the world. 
-All you need is a cheap VPS/cloud function, and domain with optional access to it's dns.
-
-![Connect to your NAS from work](https://raw.githubusercontent.com/dprandzioch/docker-ddns/develop/connect-to-your-nas-from-work.png)
+It's aim is to be be as cheap as posible, so you'll only need a domain and google's cloud functions or a cheap VPS.
 
 ## Installation
 
 You can either take the image from DockerHub or build it on your own.
 
-### Dns updater support
-**nsupdate** - No configuration is needed here  
-**Google's Cloud DNS** - you need to configure the project name and the path to your service credentials file.  
+### DNS integration
+**nsupdate** - No configuration needed here  
+**Google's Cloud DNS** - you need to configure the project name, and the path to your service credentials file.  
 This could be done through the environment variables:
 ```yaml
 GCP_PROJECT=.... # Your project name
@@ -52,10 +49,10 @@ docker run -it -d \
     -e ZONE=example.org \
     -e RECORD_TTL=3600 \
     --name=dyndns \
-    davd/docker-ddns:latest
+    sp0x/go-ddns:latest
 ```
 
-If you want to persist DNS configuration across container recreation, add `-v /somefolder:/var/cache/bind`. If you are experiencing any 
+If you want to persist DNS configuration across container runs, add `-v /somefolder:/var/cache/bind`. If you are experiencing any 
 issues updating DNS configuration using the API (`NOTAUTH` and `SERVFAIL`), make sure to add writing permissions for root (UID=0) to your 
 persistent storage (e.g. `chmod -R a+w /somefolder`).
 
@@ -89,11 +86,8 @@ Afterwards you have a running docker container that exposes three ports:
 That package features a simple REST API written in Go, that provides a simple
 interface, that almost any router that supports Custom DDNS providers can
 attach to (e.g. Fritz!Box). It is highly recommended to put a reverse proxy
-before the API.
-
-It provides one single GET request, that is used as follows:
-
-http://myhost.mydomain.tld:8080/update?secret=changeme&domain=foo&addr=1.2.3.4
+before the API.  
+For examples of API requests, see the API.http file.
 
 ### Fields
 
@@ -138,6 +132,7 @@ Make sure to have these environment variables:
 - API_KEY
 - SUBDOMAIN
 
+#### ddclient example
 An example on the ddclient (Linux DDNS client) based Ubiquiti router line:
 
 set service dns dynamic interface eth0 service dyndns host-name <your-ddns-hostname-to-be-updated>
@@ -158,15 +153,6 @@ Another router that has been tested is from the D-Link router line where you nee
 details in on the Web Interface. The values are self-explanatory. Under the server (once you chosen Manual)
 you need to enter you DDNS server's hostname or IP. The protocol used by the router will be the 
 dyndns2 by default and cannot be changed.
-
-
-## Accessing the REST API log
-
-Just run
-
-```
-docker logs -f dyndns
-```
 
 ## DNS setup
 
@@ -190,4 +176,9 @@ will then be `foo.dyndns.domain.tld`.
 
 ## Common pitfalls
 
-* If you're on a systemd-based distribution, the process `systemd-resolved` might occupy the DNS port 53. Therefore starting the container might fail. To fix this disable the DNSStubListener by adding `DNSStubListener=no` to `/etc/systemd/resolved.conf` and restart the service using `sudo systemctl restart systemd-resolved.service` but be aware of the implications... Read more here: https://www.freedesktop.org/software/systemd/man/systemd-resolved.service.html and https://github.com/dprandzioch/docker-ddns/issues/5
+* If you're on a systemd-based distribution, the process `systemd-resolved` might occupy the DNS port 53. 
+Therefore, starting the container might fail. 
+To fix this, disable the DNSStubListener by adding `DNSStubListener=no` to `/etc/systemd/resolved.conf` 
+and restart the service using `sudo systemctl restart systemd-resolved.service` 
+but be aware of the implications... 
+Read more here: https://www.freedesktop.org/software/systemd/man/systemd-resolved.service.html and https://github.com/dprandzioch/docker-ddns/issues/5

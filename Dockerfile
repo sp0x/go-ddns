@@ -7,7 +7,7 @@ RUN cd /app \
     && make build
 
 FROM debian:buster-slim
-MAINTAINER David Prandzioch <vaskovasilev94@yahoo.com>
+MAINTAINER Vasil Vasilev <vaskovasilev94@yahoo.com>
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
 	apt-get install -q -y bind9 dnsutils && \
