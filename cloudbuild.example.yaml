@@ -11,5 +11,5 @@ steps:
       - go113
       - --trigger-http
       - --allow-unauthenticated
-    env: ['GOPATH=/gopath', 'ZONE=vaskovasileveu', 'DOMAIN=vaskovasilev.eu', 'TTL=300', 'PROVIDER=google']
+    env: ['GOPATH=/gopath', 'ZONE=myzone', 'DOMAIN=mydomain.com', 'TTL=300', 'PROVIDER=google']
     dir: './'
