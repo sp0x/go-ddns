@@ -1,3 +1,8 @@
+#Simple call for root domain
+GET http://localhost:8080/update?secret=nesdrnw4e5gwsr
+
+###
+
 #Full address
 GET http://localhost:8080/update?addr=192.38.139.87&secret=nesdrnw4e5gwsr&domain=vaskovasilev.eu
 Accept: application/json
@@ -5,7 +10,7 @@ Accept: application/json
 ###
 
 #Subdomain
-GET http://localhost:8080/update?secret=nesdrnw4e5gwsr&addr=1.1.1.1&domain=mamavesi
+GET http://localhost:8080/update?secret=nesdrnw4e5gwsr&addr=1.1.1.1&domain=xx
 Accept: application/json
 
 ###
@@ -14,6 +19,3 @@ Accept: application/json
 #GET http://localhost:8080/update?secret=nesdrnw4e5gwsr&domain=vaskovasilev.eu
 GET http://31b1e4a9cb70.ngrok.io/update?secret=nesdrnw4e5gwsr&domain=vaskovasilev.eu
 Accept: application/json
-
-###
-GET https://us-central1-demoproject-280919.cloudfunctions.net/goddns?secret=secret&addr=1.1.1.1&domain=mamavesi

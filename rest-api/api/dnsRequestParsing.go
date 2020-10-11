@@ -50,7 +50,7 @@ func (e RequestExtractionSet) Extract(r *http.Request) *DnsRequest {
 		addr := extractor.Address(r)
 		secret := extractor.Secret(r)
 		domain := extractor.Domain(r)
-		if !(secret == "" || domain == "") {
+		if !(secret == "") {
 			return &DnsRequest{
 				Address: addr,
 				Secret:  secret,

@@ -40,13 +40,14 @@ func BuildWebserviceResponseFromRequest(r *http.Request, appConfig *config.Confi
 	}
 
 	for i, domain := range dnsReq.Domains {
-		if domain == "" {
+		fqdn := parseFullDomain(domain, appConfig)
+		if fqdn == "" {
 			dnsReq.Success = false
 			dnsReq.Message = "Host not set"
 			log.Warn("Host not set")
 			return dnsReq
 		}
-		dnsReq.Domains[i] = parseFullDomain(domain, appConfig)
+		dnsReq.Domains[i] = fqdn
 	}
 
 	var err error
@@ -78,6 +79,9 @@ func parseRecordValue(extractedValue string, r *http.Request) (string, string, e
 }
 
 func parseFullDomain(requiredHostNamePart string, c *config.Config) string {
+	if requiredHostNamePart == "" {
+		return c.Domain
+	}
 	if strings.HasSuffix(requiredHostNamePart, "."+c.Domain) {
 		return requiredHostNamePart
 	}
